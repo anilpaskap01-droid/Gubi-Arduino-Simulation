@@ -18,7 +18,7 @@ The build copies compiler tools, Arduino headers, and compiled library objects f
 
 - Dashboard with local projects and 20 circuit starters.
 - 104 registry definitions across nine categories, including 12 boards. Every definition displays its actual support level.
-- SVG electronic visuals authored for GUBI; searchable library, click to add, drag onto the grid, rotation, duplicate, delete, pin wiring, wire colors, pan, zoom, minimap, selection, and context menu.
+- 104 individually addressable SVG component models authored for GUBI; searchable library, click to add, drag onto the grid, rotation, duplicate, delete, pin wiring, wire colors, pan, zoom, minimap, selection, and context menu.
 - Circuit, Code, and Split modes. Local Monaco editor with Arduino C++ highlighting.
 - Start, Pause/Resume, Stop, Reset; real firmware compilation and Intel HEX upload.
 - GPIO driven LED and RGB brightness, physical servo pulse decoding, closed button/switch nets, ADC input sliders.
@@ -73,13 +73,28 @@ Support labels describe the implemented models, not full analog circuit fidelity
 ## Known limitations
 
 - This is a functional digital simulator, **not SPICE**. Resistors provide connectivity; Ohm's law, current, capacitor charge, diode curves, pull-down resistor networks, and destructive electrical behavior are not solved. A warning checks directly wired power-to-ground nets. Other circuit faults may remain undetected.
-- Only one Uno CPU is accepted. Other boards currently share a generic development-board visual and generic pin metadata; they do not emulate those architectures or reproduce their complete physical pinout.
+- Only one Uno CPU is accepted. Other boards have their own illustrative board models, but their experimental pin metadata and CPU emulation do not reproduce the complete hardware.
 - Device models for I2C/SPI/OneWire, displays, DHT, ultrasonic, WS2812, motors, and other Experimental catalog devices remain future work. Linking a library does not imply that its external device is simulated.
 - The Arduino sketch is compiled as C++ with `Arduino.h` prepended. Arduino IDE automatic function prototype generation and multi-file sketches are not implemented. Define functions before use or provide prototypes. Only the toolchain's bundled headers and precompiled libraries are available; arbitrary library installation is not offered.
 - Host speed determines wall-clock simulation speed. The CPU runs with the correct 16 MHz simulated clock but makes no hard real-time guarantee. UI updates are batched at approximately 50 Hz.
 - Serial display baud selection is informational; the sketch's `Serial.begin` sets actual emulated UART baud. RX follows the configured hardware character timing. Timestamp display uses the current simulation snapshot and is not a retained per-character trace.
 - Project sharing exports a portable file; hosted share links, accounts, cross-device cloud sync, and collaborative editing are not implemented. IndexedDB is origin-local and may be cleared by browser storage policies.
-- Editor and UI have a mobile fallback, but dense circuit editing remains desktop oriented. SVG artwork families are shared across generic Experimental modules.
+- Editor and UI have a mobile fallback, but dense circuit editing remains desktop oriented. Every catalog item has its own SVG asset. Related devices share drawing helpers, while packaging, probes, screens and connectors identify their physical family.
+
+## Component models
+
+All 104 catalog entries have an original SVG in `src/assets/components/catalog/`: 8×8 matrix pixels, segmented displays, LCD/OLED screens, sensor packages, board footprints, motors, power devices, DIP ICs and breadboards. The same models appear in the library, canvas and inspector. Servos and switches use separate base SVGs under their live animation overlays. Display graphics show physical hardware, not invented simulation output. Existing project ids and pin ids are preserved.
+
+```sh
+# Node 22.18+ or 24; regenerate the checked-in original vectors
+npm run artwork:generate
+# With the Vite development server running
+npm run test:models
+```
+
+Reusable geometry lives in `scripts/artwork/`, organized by component family. Adding a definition requires a matching SVG; the model resolver deliberately rejects missing models instead of silently rendering a generic rectangle. Unit checks cover all 104 entries and count the physical 64 pixels in both matrix variants. Browser QA parses every SVG, verifies image loading, and checks MAX7219 in the canvas and inspector. Simulation support labels are independent of artwork coverage.
+
+![All component models](docs/component-models.png)
 
 ## Add a component
 

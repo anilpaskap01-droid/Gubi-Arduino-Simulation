@@ -15,7 +15,9 @@
     "test:browser": "node scripts/browser-check.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "deploy": "npm run build && wrangler deploy",
-    "deploy:check": "wrangler deploy --dry-run"
+    "deploy:check": "wrangler deploy --dry-run",
+    "artwork:generate": "node --experimental-strip-types scripts/generate-component-artwork.mjs",
+    "test:models": "node scripts/model-check.mjs"
   },
   "dependencies": {
     "@horang-corp/avr-gcc-wasm": "latest",
@@ -32,6 +34,7 @@
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.50.0",
+    "@types/node": "^26.6.4",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.0",
