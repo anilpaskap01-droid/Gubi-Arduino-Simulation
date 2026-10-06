@@ -17,7 +17,8 @@
     "deploy": "npm run build && wrangler deploy",
     "deploy:check": "wrangler deploy --dry-run",
     "artwork:generate": "node --experimental-strip-types scripts/generate-component-artwork.mjs",
-    "test:models": "node scripts/model-check.mjs"
+    "test:models": "node scripts/model-check.mjs",
+    "test:catalog": "node --experimental-strip-types scripts/catalog-check.mjs"
   },
   "dependencies": {
     "@horang-corp/avr-gcc-wasm": "latest",

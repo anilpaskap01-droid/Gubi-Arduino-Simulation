@@ -1,4 +1,5 @@
 import {chromium,expect} from '@playwright/test';
+import {expandedModels} from '../src/components/expandedCatalog.ts';
 const browser=await chromium.launch({channel:'msedge',headless:true});
 try{
  const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(String(e)));
@@ -11,9 +12,12 @@ try{
  await page.getByRole('button',{name:'Circuit',exact:true}).click();await page.getByRole('button',{name:'Fit view',exact:true}).click();
  const matrix=page.locator('.react-flow__node').filter({hasText:'MAX7219 matrix'});await expect(matrix.locator('img')).toBeVisible();expect(await matrix.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
  await matrix.click();await expect(page.locator('.inspector-preview img')).toBeVisible();await page.screenshot({path:'docs/matrix-model.png'});
- await page.evaluate(models=>{document.querySelector('.app-shell').style.display='none';const gallery=document.createElement('main');gallery.style.cssText='padding:24px;background:#171e25;display:grid;grid-template-columns:repeat(8,1fr);gap:10px';for(const m of models){const card=document.createElement('figure');card.style.cssText='margin:0;padding:12px 6px;background:#222d35;border:1px solid #42505a;border-radius:5px;height:175px;text-align:center';const img=document.createElement('img');img.src=`/src/assets/components/catalog/${m.id}.svg`;img.alt=m.name;img.style.cssText='width:100%;height:125px;object-fit:contain';const caption=document.createElement('figcaption');caption.textContent=m.name;caption.style.cssText='font:11px Segoe UI;color:#dce5e6;padding-top:10px';card.append(img,caption);gallery.append(card);}document.body.append(gallery);},models);
- await expect.poll(()=>page.locator('main img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0))).toBe(true);
+ await page.evaluate(models=>{document.querySelector('.app-shell').style.display='none';const gallery=document.createElement('main');gallery.id='model-gallery';gallery.style.cssText='padding:24px;background:#171e25;display:grid;grid-template-columns:repeat(8,1fr);gap:10px';for(const m of models){const card=document.createElement('figure');card.style.cssText='margin:0;padding:12px 6px;background:#222d35;border:1px solid #42505a;border-radius:5px;height:175px;text-align:center';const img=document.createElement('img');img.src=`/src/assets/components/catalog/${m.id}.svg`;img.alt=m.name;img.style.cssText='width:100%;height:125px;object-fit:contain';const caption=document.createElement('figcaption');caption.textContent=m.name;caption.style.cssText='font:11px Segoe UI;color:#dce5e6;padding-top:10px';card.append(img,caption);gallery.append(card);}document.body.append(gallery);},models);
+ try{await expect.poll(()=>page.locator('#model-gallery img').evaluateAll(imgs=>imgs.every(img=>img.complete&&img.naturalWidth>0)),{timeout:30000}).toBe(true);}catch(e){console.log('Images still pending or broken:',await page.locator('#model-gallery img').evaluateAll(imgs=>imgs.filter(img=>!img.complete||!img.naturalWidth).map(img=>({src:img.src,complete:img.complete}))));throw e;}
  await page.screenshot({path:'docs/component-models.png',fullPage:true});
+ const families=Object.values(Object.fromEntries(models.filter(m=>expandedModels[m.id]).map(m=>[expandedModels[m.id].family,m])));
+ await page.evaluate(ids=>{for(const card of Array.from(document.querySelector('#model-gallery').children)){if(!ids.includes(card.querySelector('img').alt))card.remove();}},families.map(m=>m.name));
+ await page.screenshot({path:'docs/component-families.png',fullPage:true});
  expect(errors).toEqual([]);console.log(`PASS ${models.length} SVG models parse and render; MAX7219 canvas and inspector verified.`);
 }finally{await browser.close();}
 

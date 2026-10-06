@@ -17,8 +17,8 @@ The build copies compiler tools, Arduino headers, and compiled library objects f
 ## Workbench
 
 - Dashboard with local projects and 20 circuit starters.
-- 104 registry definitions across nine categories, including 12 boards. Every definition displays its actual support level.
-- 104 individually addressable SVG component models authored for GUBI; searchable library, click to add, drag onto the grid, rotation, duplicate, delete, pin wiring, wire colors, pan, zoom, minimap, selection, and context menu.
+- 626 registry definitions across 15 categories, including 42 boards. Every definition displays its actual support level.
+- 626 individually addressable SVG component models authored for GUBI; virtualized library with name/interface search, category and support filters, click to add, drag onto the grid, rotation, duplicate, delete, pin wiring, wire colors, pan, zoom, minimap, selection, and context menu.
 - Circuit, Code, and Split modes. Local Monaco editor with Arduino C++ highlighting.
 - Start, Pause/Resume, Stop, Reset; real firmware compilation and Intel HEX upload.
 - GPIO driven LED and RGB brightness, physical servo pulse decoding, closed button/switch nets, ADC input sliders.
@@ -83,22 +83,27 @@ Support labels describe the implemented models, not full analog circuit fidelity
 
 ## Component models
 
-All 104 catalog entries have an original SVG in `src/assets/components/catalog/`: 8×8 matrix pixels, segmented displays, LCD/OLED screens, sensor packages, board footprints, motors, power devices, DIP ICs and breadboards. The same models appear in the library, canvas and inspector. Servos and switches use separate base SVGs under their live animation overlays. Display graphics show physical hardware, not invented simulation output. Existing project ids and pin ids are preserved.
+All 626 catalog entries have an original SVG in `src/assets/components/catalog/`: 8×8 matrix pixels, segmented displays, LCD/OLED screens, sensor packages, board footprints, motors, power devices, DIP ICs and breadboards. 522 new entries cover development boards, passives, OLED/TFT/e-paper, LED matrices and rings, environment/motion/optical/gas sensors, actuators, radios, power converters, numbered-lead ICs, input controls, connectors, prototyping, audio, storage and instruments. The same models appear in the library, canvas and inspector. Servos and switches use separate base SVGs under their live animation overlays. Display graphics show physical hardware, not invented simulation output. Existing project ids and pin ids are preserved. Expanded parts use illustrative interface-level wiring, not manufacturer-specific physical pinouts; package ICs expose numbered leads. Pin spacing grows with lead count, including the 100-lead ATmega2560 package. New entries remain Experimental until their behavior is implemented.
 
 ```sh
 # Node 22.18+ or 24; regenerate the checked-in original vectors
 npm run artwork:generate
 # With the Vite development server running
 npm run test:models
+npm run test:catalog
 ```
 
-Reusable geometry lives in `scripts/artwork/`, organized by component family. Adding a definition requires a matching SVG; the model resolver deliberately rejects missing models instead of silently rendering a generic rectangle. Unit checks cover all 104 entries and count the physical 64 pixels in both matrix variants. Browser QA parses every SVG, verifies image loading, and checks MAX7219 in the canvas and inspector. Simulation support labels are independent of artwork coverage.
+Reusable geometry lives in `scripts/artwork/`, organized by component family. The expansion uses 66 physical drawing families with per-device packaging, labels, pixel/lead counts and colors. Adding a definition requires a matching SVG; the model resolver deliberately rejects missing models instead of silently rendering a generic rectangle. Unit checks cover all 626 entries and count the physical 64 pixels in both matrix variants. Browser QA parses all 626 SVGs and verifies image loading, checks MAX7219 in the canvas and inspector, exercises each expanded drawing family on the canvas, checks the end of the virtual list and filtering, and validates dense wiring handles. Simulation support labels are independent of artwork coverage.
 
-![All component models](docs/component-models.png)
+![Expanded model families](docs/component-families.png)
+
+[All 626 component models](docs/component-models.png)
+
+Interface references: [Adafruit STEMMA specifications](https://learn.adafruit.com/introducing-adafruit-stemma-qt/technical-specs), [TI logic IC documentation](https://www.ti.com/product/SN74HC595), and [ST inertial sensor documentation](https://www.st.com/resource/en/datasheet/lsm6ds3tr-c.pdf). Drawings are original interface illustrations rather than exact manufacturer footprints.
 
 ## Add a component
 
-Add a definition to `src/components/registry.ts`, with unique `id`, category, pin ids/types, visual, default properties, interactive controls, documentation and support level. Add SVG assets/rendering in `PartVisual.tsx` as needed. Implement real pin/net behavior in the simulation engine and meaningful regression tests **before** changing its support label from Experimental. Every project wire stores explicit component ids and pin ids.
+For an illustrative component, extend `src/components/expandedCatalog.ts` and `scripts/artwork/expanded.mjs`, then run `npm run artwork:generate`. For a functional device, add a definition to `src/components/registry.ts`, with unique `id`, category, pin ids/types, visual, default properties, interactive controls, documentation and support level. Add SVG assets/rendering in `PartVisual.tsx` as needed. Implement real pin/net behavior in the simulation engine and meaningful regression tests **before** changing its support label from Experimental. Every project wire stores explicit component ids and pin ids.
 
 Project JSON format is versioned:
 

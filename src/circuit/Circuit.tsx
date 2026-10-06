@@ -3,13 +3,14 @@ import {ReactFlow,Background,Controls,MiniMap,Handle,Position,ConnectionMode,app
 import '@xyflow/react/dist/style.css';
 import {definitions} from '../components/registry';
 import {PartVisual} from './PartVisual';
+import {pinLayout} from './pinLayout';
 import {useProject} from '../store/useProject';
 import type {Part,Snapshot} from '../types';
 type PartNode=Node<{part:Part;state?:Snapshot['states'][string];press:(id:string,value:boolean)=>void},'part'>;
-const ElectronicNode=memo(({data,selected}:NodeProps<PartNode>)=>{const {part,state}=data,d=definitions[part.type],isBoard=d.visual==='board',update=useUpdateNodeInternals();useEffect(()=>{update(part.id);},[part.id,part.rotation,update]);return <div className={`electronic-node ${isBoard?'board-node':''} ${selected?'selected':''}`} style={{transform:`rotate(${part.rotation}deg)`}}>
- <div className="node-name">{d.name}</div><PartVisual part={part} state={state}/>
+const ElectronicNode=memo(({data,selected}:NodeProps<PartNode>)=>{const {part,state}=data,d=definitions[part.type],isBoard=d.visual==='board',layout=pinLayout(d),update=useUpdateNodeInternals();useEffect(()=>{update(part.id);},[part.id,part.rotation,update]);return <div className={`electronic-node ${isBoard?'board-node':''} ${selected?'selected':''}`} style={{transform:`rotate(${part.rotation}deg)`,height:layout.height}}>
+ <div className="node-name">{d.name}</div><div className="node-artwork"><PartVisual part={part} state={state}/></div>
  {d.visual==='button'&&<button className="physical-button nodrag" aria-label="Press button" onPointerDown={()=>data.press(part.id,true)} onPointerUp={()=>data.press(part.id,false)} onPointerLeave={()=>data.press(part.id,false)}/>}
- {d.pins.map((pin,i)=>{const right=isBoard?i>=2&&i<16:i%2===1,sidePins=d.pins.filter((_,j)=>isBoard?(right?j>=2&&j<16:!(j>=2&&j<16)):j%2===(right?1:0)),idx=sidePins.findIndex(x=>x.id===pin.id);const top=32+(idx+1)/(sidePins.length+1)*(isBoard?250:85);return <Handle key={pin.id} id={pin.id} type="source" position={right?Position.Right:Position.Left} style={{top,background:pin.type==='ground'?'#89929d':pin.type==='power'?'#d57d73':'#c2b58f'}}><span className={`pin-label ${right?'right':'left'}`}>{pin.id}</span></Handle>;})}
+ {layout.pins.map(({pin,right,top})=><Handle key={pin.id} id={pin.id} type="source" position={right?Position.Right:Position.Left} style={{top,background:pin.type==='ground'?'#89929d':pin.type==='power'?'#d57d73':'#c2b58f'}}><span className={`pin-label ${right?'right':'left'}`}>{pin.id}</span></Handle>)}
  <span className={`support ${d.supportLevel.toLowerCase()}`}>{d.supportLevel}</span>
  </div>;});
 const nodeTypes={part:ElectronicNode};
