@@ -28,7 +28,7 @@ export class Engine {
  snapshot():Snapshot{
   const elapsed=Math.max(1,this.cpu.cycles-this.windowStart),pins:Record<string,number>={};for(let i=0;i<20;i++){if(this.levels[i])this.highCycles[i]+=this.cpu.cycles-this.last[i];pins[i<14?'D'+i:'A'+(i-14)]=this.highCycles[i]/elapsed;this.highCycles[i]=0;this.last[i]=this.cpu.cycles;}this.windowStart=this.cpu.cycles;
   const uno=this.project.components.find(c=>c.type==='arduino-uno-r3'),states:Snapshot['states']={};
-  if(uno){const value=(id:string)=>{if(this.net.connected(id,`${uno.id}:5V`))return 1;for(const [pin,v] of Object.entries(pins))if(this.net.connected(id,`${uno.id}:${pin}`))return v;return 0;};const ground=(id:string)=>this.net.connected(id,`${uno.id}:GND`);
+  if(uno){states[uno.id]={brightness:pins.D13};const value=(id:string)=>{if(this.net.connected(id,`${uno.id}:5V`))return 1;for(const [pin,v] of Object.entries(pins))if(this.net.connected(id,`${uno.id}:${pin}`))return v;return 0;};const ground=(id:string)=>this.net.connected(id,`${uno.id}:GND`);
    for(const c of this.project.components){if(c.type.startsWith('led-'))states[c.id]={brightness:ground(`${c.id}:K`)?value(`${c.id}:A`):0};
     if(c.type.startsWith('rgb-led')){const anode=c.type.endsWith('anode'),common=anode?value(`${c.id}:VCC`)>0:ground(`${c.id}:GND`);const rgb=['R','G','B'].map(k=>Math.round(255*(common?(anode?1-value(`${c.id}:${k}`):value(`${c.id}:${k}`)):0)));states[c.id]={color:`rgb(${rgb.join(',')})`,brightness:Math.max(...rgb)/255};}
     if(c.type.includes('servo')&&ground(`${c.id}:GND`)&&value(`${c.id}:VCC`)>0){for(let i=0;i<14;i++)if(this.net.connected(`${c.id}:SIG`,`${uno.id}:D${i}`)&&this.pulse[i]>=500&&this.pulse[i]<=2500)states[c.id]={angle:pulseAngle(this.pulse[i])};}
