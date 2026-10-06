@@ -1,0 +1,2 @@
+import {Component,type ReactNode} from 'react';
+export class ErrorBoundary extends Component<{children:ReactNode},{error:boolean}>{state={error:false};static getDerivedStateFromError(){return {error:true};}componentDidCatch(error:Error){console.error(error);}render(){return this.state.error?<main style={{padding:50,color:'white',background:'#171c22'}}><h1>GUBI encountered an error.</h1><p>Your saved projects remain in your browser.</p><button onClick={()=>location.reload()}>Reload workbench</button></main>:this.props.children;}}

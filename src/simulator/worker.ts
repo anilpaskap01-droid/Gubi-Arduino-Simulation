@@ -1,0 +1,4 @@
+import {Engine} from './engine';
+let engine:Engine|undefined,running=false,timer:ReturnType<typeof setTimeout>|undefined;
+function tick(){if(!running||!engine)return;try{engine.advance(320000);postMessage({type:'snapshot',snapshot:engine.snapshot()});timer=setTimeout(tick,20);}catch(error){running=false;postMessage({type:'error',message:String(error)});}}
+self.onmessage=e=>{try{const m=e.data;if(m.type==='start'){clearTimeout(timer);engine=new Engine(m.hex,m.project);running=true;tick();}if(m.type==='pause'){running=false;clearTimeout(timer);}if(m.type==='resume'&&!running&&engine){running=true;tick();}if(m.type==='stop'){running=false;clearTimeout(timer);engine=undefined;}if(m.type==='update')engine?.update(m.project);if(m.type==='serial')engine?.rx.push(...new TextEncoder().encode(m.text));}catch(error){postMessage({type:'error',message:String(error)});}};
